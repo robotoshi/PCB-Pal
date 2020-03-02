@@ -2,14 +2,20 @@
 #include "gcodes.h"
 #include "gcommand.h"
 
+// to avoid using extern, we pass the command object to dispatch() and keep it here for this file to see
 static GCommand command;
+
+// because the gcode functions are stateful in general, they need to know when to reset their state, 
+// namely if they're been interrupted by an urgent command
+static bool first_time = true;
 
 /**
 	Choose which function to call
 */
-Procedure gcodes::dispatch(GCommand comm) {
-	command = comm;
-	Serial.println("\nDispatching...");
+Procedure gcodes::dispatch(GCommand gcomm) {
+	command = gcomm;
+	first_time = true;
+	Serial.println("Dispatching...\n");
 
 	char first_letter = command.get_letter();
 
@@ -50,27 +56,40 @@ Procedure gcodes::dispatch(GCommand comm) {
 	} else return other;
 }
 
+
 Procedure gcodes::test() {
-	static int count = 0;
+	static int count = 10;
+	if (first_time) {
+		count = 10;
+		first_time = false;
+	}
+
+	Serial.print(count);
 	Serial.println("----");
-	delay(200);
-	if (count++ >= 10) {
-		count = 0;
-		return NULL;
+	delay(400);
+	if (count-- <= 0) {
+		count = 10;
+		return done();
 	}
 	return test;
 }
 
-Procedure gcodes::echo() {
-	Serial.println("\n------");
-	command.dump();
-	Serial.println("------\n");
+Procedure gcodes::done() {
+	Serial.println("\nDONE");
 	return NULL;
 }
 
+Procedure gcodes::echo() {
+	Serial.println("------");
+	command.dumpln();
+	Serial.println("------");
+	return done();
+}
+
 Procedure gcodes::other() {
-	Serial.println("Unknown Code");
-	return NULL;
+	Serial.println("Unknown Code: \t");
+	command.dump();
+	return done();
 }
 
 //////////////////////////////////////////////////////////////
@@ -82,7 +101,7 @@ Procedure gcodes::M73() { return echo; }
 
 Procedure gcodes::M115() { 
 	Serial.println("PCB-Pal 1.0a");
-	return NULL; 
+	return done(); 
 }
 
 Procedure gcodes::G90() { return echo; }
@@ -117,3 +136,4 @@ Procedure gcodes::M2() { return echo; }
 Procedure gcodes::M108() { return echo; }
 
 Procedure gcodes::M400() { return echo; }
+

@@ -12,6 +12,7 @@ namespace gcodes {
 	Procedure test();
 	Procedure echo();
 	Procedure other();
+	Procedure done();	// all gcode procedures should call this to return control when finished
 
 	// Actual codes lie below...
 	// See the file that outlines functionality in more detail

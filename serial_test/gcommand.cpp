@@ -49,6 +49,27 @@ GCommand::GCommand(char* line) {
 void GCommand::dump() {
 	for (int i=0; i<codes_len; ++i) {
 		Serial.print(codes[i]->letter);
+
+		switch(codes[i]->type) {
+			case CODE:
+				Serial.print(codes[i]->number.code);
+				break;
+			case VALUE:
+				Serial.print(codes[i]->number.value);
+				break;
+			case TEXT:
+				Serial.print("\"");
+				Serial.print(codes[i]->number.text);
+				Serial.print("\"");
+				break;
+		}
+		Serial.print(" ");
+	}
+}
+
+void GCommand::dumpln() {
+	for (int i=0; i<codes_len; ++i) {
+		Serial.print(codes[i]->letter);
 		Serial.print(" ");
 
 		switch(codes[i]->type) {
@@ -65,5 +86,4 @@ void GCommand::dump() {
 				break;
 		}
 	}
-
 }

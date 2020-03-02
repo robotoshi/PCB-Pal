@@ -9,6 +9,7 @@ union Digits {
 	double value;
 };
 
+// what type of number comes after the first letter
 enum Numtype {
 	CODE,
 	VALUE,
@@ -22,11 +23,11 @@ struct GCode {
 };
 
 class GCommand {
-public:
+private:
 	GCode* codes[5];
 	int codes_len;
 
-	GCode* parse_gcode(char* str);
+	GCode* parse_gcode(char* str);		// split a gcode line into a GCommand object
 
 public:
 	GCommand() {}
@@ -35,6 +36,7 @@ public:
 	char get_letter() { return codes[0]->letter; }
 	int get_code() { return codes[0]->number.code; }
 	void dump();
+	void dumpln();
 };
 
 #endif
