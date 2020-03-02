@@ -1,4 +1,5 @@
-#pragma once
+#ifndef H_QUEUE
+#define H_QUEUE
 
 /**
 My own app-specific queue class. 
@@ -30,3 +31,5 @@ public:
 	int items() { return size; }
 	char* get(int index) { return data[index]; }
 };
+
+#endif
