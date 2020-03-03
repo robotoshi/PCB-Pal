@@ -83,7 +83,7 @@ Procedure urgent_process() {
 			c = Serial.read();
 
 		if (c == '\n' || c == ';') {
-			if (index <= 0) return NULL;
+			if (index <= 0) return urgent_process;
 			inbuf[index] = '\0';
 			Serial.println();
 			Serial.println(inbuf);
@@ -92,7 +92,7 @@ Procedure urgent_process() {
 			// if the first letter is not a letter, it's a bad code
 			if (!isupper(inbuf[0])) {
 				Serial.println("<^Invalid Command^\n");
-				return NULL;
+				return urgent_process;
 			}
 
 			Serial.println("OK");
