@@ -1,7 +1,7 @@
 #include <string.h>
 #include "queue.h"
-#include "gcommand.h"
-#include "gcodes.h"
+#include "ginterpreter.h"
+// #include "printhead.h"
 
 #define BAUD_RATE	9600
 #define RX_TIMEOUT	3000
@@ -10,7 +10,9 @@
 #define CMD_WID		50
 #define QUEUE_LEN	5
 
-Queue queue;
+typedef int (*Procedure)();
+
+Queue queue(QUEUE_LEN, CMD_WID);
 char inbuf[CMD_WID];
 int requested = 0;
 int index = 0;
@@ -18,33 +20,37 @@ int index = 0;
 bool urgent = false;
 Procedure task;
 
+GInterpreter interpreter;
+
 void setup() {
-	queue = Queue(QUEUE_LEN, CMD_WID);
 	Serial.begin(BAUD_RATE);
 	while (!Serial) ; 		// wait for serial to be ready
 	task = request_gcode;
-	Serial.println('\0');
 }
-
 
 /**
 	Each task will return a Procedure (function pointer) for what should be done next.
 	Some things can't see the options, so they can send NULL and the escape task will be run
 */
 void loop() {
-	static unsigned long prev_rx = millis();
+	static unsigned long prev_rx = 0;
 
-	if (!urgent && millis() > prev_rx + URGENT_INTERVAL) {
+	unsigned long now = millis();
+	if ( !urgent && (now > prev_rx + URGENT_INTERVAL) ) {
 		if (check_urgent(Serial.peek())) {
 			Serial.read();
 			task = urgent_process;
 		}
-		prev_rx = millis();
+		prev_rx = now;
 	}
 
-	Procedure t = task();
-	if (t == NULL) task = (urgent) ? urgent_process : receive;		// escapse task
-	else task = t;
+	task = task();
+	// if (task == NULL) task = (urgent) ? urgent_process : receive;		// escapse task
+}
+
+Procedure run_gcode() {
+	if (interpreter.execute()) return run_gcode;
+	else return (urgent) ? urgent_process : receive;
 }
 
 /**
@@ -76,7 +82,7 @@ Procedure urgent_process() {
 				urgent = false;
 				Serial.println("\nNormal Mode>");
 				c = Serial.read();
-				return NULL;
+				return receive;
 			} else 		// if the '>' is not on a line of its own, end this line and pretend it was
 				c = '\n';
 		} else 
@@ -98,8 +104,9 @@ Procedure urgent_process() {
 			Serial.println("OK");
 			Serial.print("\t\t<EXEC: ");
 			Serial.println(inbuf);
-			// ask dispatch() to fetch us the right Procedure for this command
-			return gcodes::dispatch(GCommand(inbuf));
+
+			interpreter.interpret(inbuf);
+			return run_gcode;
 
 		} else {
 			inbuf[index++] = c;
@@ -190,7 +197,9 @@ Procedure load_gcode() {
 		Serial.print(" EXEC: ");
 		char* line = queue.pop_front();
 		Serial.println(line);
-		return gcodes::dispatch(GCommand(line));
+
+		interpreter.interpret(line);
+		return run_gcode;
 	}
 }
 

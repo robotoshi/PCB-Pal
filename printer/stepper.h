@@ -27,8 +27,9 @@ private:
 
 public:
 	Stepper(int steps, int pin1, int pin2, int pin3, int pin4);
+	Stepper() {}
 
-	int set_move(int steps, unsigned long step_delay);
+	int set_move(int steps, unsigned long s_delay);
 	int tick();
 	void disable();
 	void cancel_move();

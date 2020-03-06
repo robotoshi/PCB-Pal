@@ -35,10 +35,10 @@ Stepper::Stepper(int steps, int pin1, int pin2, int pin3, int pin4) {
 /**
 	Set the parameters for a move.
 	steps: number of steps to take
-	time: total time the move should take in us
+	time: delay between the moves in us
 */
-int Stepper::set_move(int steps, unsigned long time) {
-	step_delay = time / steps;
+int Stepper::set_move(int steps, unsigned long s_delay) {
+	step_delay = s_delay;
 	if (steps_to_go == 0) {
 		steps_to_go = steps;
 		return steps_to_go;
@@ -59,6 +59,7 @@ int Stepper::tick() {
 		if (now >= last_step_time + step_delay) {
 			last_step_time = now;
 			advance();
+			Serial.println(now - last_step_time);
 		}
 	}
 	return steps_to_go;
@@ -82,7 +83,7 @@ int Stepper::advance() {
 	Block to finish the current move immediately
 */
 void Stepper::finish_move() {
-	while (tick() > 0);
+	while (tick() != 0);
 }
 
 void Stepper::step_forward() {
