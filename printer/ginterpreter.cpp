@@ -61,12 +61,17 @@ Method GInterpreter::get_method() {
 	} else return NULL;
 }
 
-
+/**
+	Execute the current command by delegating to a member function
+*/
 bool GInterpreter::execute() {
-	if ( !INVOKE(this, method) )return done();
+	if ( !(this->*method)() ) return done();
 	else return true;
 }
 
+/**
+	Wrap up the gcode when it's finished and send info
+*/
 bool GInterpreter::done() {
 	Serial.println("\nDONE");
 	first_time = true;

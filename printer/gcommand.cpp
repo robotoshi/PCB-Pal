@@ -1,6 +1,16 @@
 #include "Arduino.h"
 #include "gcommand.h"
 
+GCommand::GCommand(char* line) {
+	char* g = strtok(line, " ;\n");
+
+	codes_len = 0;
+	while (g) {
+		codes[codes_len++] = parse_gcode(g);
+		g = strtok(NULL, " ;\n");
+	}
+}
+
 GCode* GCommand::parse_gcode(char* str) {
 	GCode* gc = new GCode;
 	char letter = str[0];
@@ -34,16 +44,6 @@ GCode* GCommand::parse_gcode(char* str) {
 	}
 
 	return gc;
-}
-
-GCommand::GCommand(char* line) {
-	char* g = strtok(line, " ;\n");
-
-	codes_len = 0;
-	while (g) {
-		codes[codes_len++] = parse_gcode(g);
-		g = strtok(NULL, " ;\n");
-	}
 }
 
 void GCommand::dump() {

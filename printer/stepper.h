@@ -1,5 +1,5 @@
-#ifndef H_STEPPER
-#define H_STEPPER
+#ifndef STEPPER_H
+#define STEPPER_H
 
 #include "Arduino.h"
 
@@ -9,10 +9,10 @@
 */
 class Stepper {
 private:
-	int motor_pin_1;
-	int motor_pin_2;
-	int motor_pin_3;
-	int motor_pin_4;
+	int pin1;
+	int pin2;
+	int pin3;
+	int pin4;
 	int total_steps;
 
 	int steps_to_go;
@@ -24,17 +24,17 @@ private:
 	void set_pins(int position);
 	void step_forward();
 	void step_back();
+	int advance();
 
 public:
 	Stepper(int steps, int pin1, int pin2, int pin3, int pin4);
-	Stepper() {}
 
 	int set_move(int steps, unsigned long s_delay);
 	int tick();
 	void disable();
+	void enable();
 	void cancel_move();
 	void finish_move();
-	int advance();
 };
 
 #endif

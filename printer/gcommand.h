@@ -1,5 +1,5 @@
-#ifndef H_GCOMMAND
-#define H_GCOMMAND
+#ifndef GCOMMAND_H
+#define GCOMMAND_H
 
 #include "Arduino.h"
 
@@ -30,8 +30,8 @@ private:
 	GCode* parse_gcode(char* str);		// split a gcode line into a GCommand object
 
 public:
-	GCommand() {}
 	GCommand(char* line);
+	GCommand() {}
 
 	char get_letter() { return codes[0]->letter; }
 	int get_code() { return codes[0]->number.code; }

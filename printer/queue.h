@@ -1,5 +1,5 @@
-#ifndef H_QUEUE
-#define H_QUEUE
+#ifndef QUEUE_H
+#define QUEUE_H
 
 /**
 My own app-specific queue class. 
