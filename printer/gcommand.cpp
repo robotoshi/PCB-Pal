@@ -1,10 +1,9 @@
 #include "Arduino.h"
 #include "gcommand.h"
 
-GCommand::GCommand(char* line) {
+GCommand::GCommand(char* line) : codes_len(0) {
 	char* g = strtok(line, " ;\n");
 
-	codes_len = 0;
 	while (g) {
 		codes[codes_len++] = parse_gcode(g);
 		g = strtok(NULL, " ;\n");
@@ -25,12 +24,12 @@ GCode* GCommand::parse_gcode(char* str) {
 		++str;
 	}
 
-	// char* decimal = NULL;
+	// char* decimal = nullptr;
 
 	// for (int i=0; str[i]; ++i) {
 	// 	if (!isdigit(str[i])) {
 	// 		if (str[i] == '.') decimal = str+i;
-	// 		else return NULL;
+	// 		else return nullptr;
 	// 	}
 	// }
 

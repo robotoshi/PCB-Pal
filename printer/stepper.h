@@ -15,11 +15,11 @@ private:
 	int pin4;
 	int total_steps;
 
-	int steps_to_go;
-	int current_position;		// which step the motor is on
+	int steps_to_go = 0;
+	int current_position = 0;		// which step the motor is on
 
-	unsigned long step_delay; // delay between steps, in us, based on speed
-	unsigned long last_step_time; // time stamp in us of when the last step was taken
+	unsigned long step_delay = 1000; 	// delay between steps, in us, based on speed
+	unsigned long last_step_time = 0;	// time stamp in us of when the last step was taken
 
 	void set_pins(int position);
 	void step_forward();

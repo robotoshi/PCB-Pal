@@ -12,7 +12,7 @@ Queue::Queue (int l, int w) {
 }
 
 char* Queue::push_back(const char* in) {
-	if (size >= len) return NULL;
+	if (size >= len) return nullptr;
 	++size;
 	if (--back < 0) back = len-1;
 	strcpy(data[back], in);
@@ -20,7 +20,7 @@ char* Queue::push_back(const char* in) {
 }
 
 char* Queue::pop_front() {
-	if (size <= 0) return NULL;
+	if (size <= 0) return nullptr;
 	--size;
 	char* s = data[front];
 	if (--front < 0) front = len-1;
@@ -28,6 +28,6 @@ char* Queue::pop_front() {
 }
 
 char* Queue::peek_front() {
-//    if (size <= 0) return NULL;
+//    if (size <= 0) return nullptr;
 	return data[front];
 }

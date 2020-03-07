@@ -1,7 +1,7 @@
 #include <string.h>
 #include "queue.h"
 #include "ginterpreter.h"
-// #include "printhead.h"
+#include "printhead.h"
 
 #define BAUD_RATE	9600
 #define RX_TIMEOUT	3000
@@ -9,6 +9,16 @@
 
 #define CMD_WID		50
 #define QUEUE_LEN	5
+
+#define STEPS_PER_REV 200
+#define XPIN1 0
+#define XPIN2 0
+#define XPIN3 0
+#define XPIN4 0
+#define YPIN1 0
+#define YPIN2 0
+#define YPIN3 0
+#define YPIN4 0
 
 typedef int (*Procedure)();
 
@@ -20,17 +30,21 @@ int index = 0;
 bool urgent = false;
 Procedure task;
 
-GInterpreter interpreter;
+GInterpreter* interpreter;
+Printhead* head;
 
 void setup() {
 	Serial.begin(BAUD_RATE);
 	while (!Serial) ; 		// wait for serial to be ready
 	task = request_gcode;
+	head = new Printhead( Stepper(STEPS_PER_REV, XPIN1, XPIN2, XPIN3, XPIN4),
+	                      Stepper(STEPS_PER_REV, YPIN1, YPIN2, YPIN3, YPIN4) );
+	interpreter = new GInterpreter(*head);
 }
 
 /**
 	Each task will return a Procedure (function pointer) for what should be done next.
-	Some things can't see the options, so they can send NULL and the escape task will be run
+	Some things can't see the options, so they can send nullptr and the escape task will be run
 */
 void loop() {
 	static unsigned long prev_rx = 0;
@@ -45,11 +59,11 @@ void loop() {
 	}
 
 	task = task();
-	// if (task == NULL) task = (urgent) ? urgent_process : receive;		// escapse task
+	// if (task == nullptr) task = (urgent) ? urgent_process : receive;		// escapse task
 }
 
 Procedure run_gcode() {
-	if (interpreter.execute()) return run_gcode;
+	if (interpreter->execute()) return run_gcode;
 	else return (urgent) ? urgent_process : receive;
 }
 
@@ -105,7 +119,7 @@ Procedure urgent_process() {
 			Serial.print("\t\t<EXEC: ");
 			Serial.println(inbuf);
 
-			interpreter.interpret(inbuf);
+			interpreter->interpret(inbuf);
 			return run_gcode;
 
 		} else {
@@ -198,7 +212,7 @@ Procedure load_gcode() {
 		char* line = queue.pop_front();
 		Serial.println(line);
 
-		interpreter.interpret(line);
+		interpreter->interpret(line);
 		return run_gcode;
 	}
 }

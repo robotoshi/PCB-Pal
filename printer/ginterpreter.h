@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include "gcommand.h"
+#include "printhead.h"
 
 class GInterpreter;		// forward-declare the class so the typedef can work and be used inside the class
 typedef bool (GInterpreter::*Method)();
@@ -11,9 +12,11 @@ class GInterpreter {
 public:
 	bool interpret(char* line);
 	bool execute();
-	GInterpreter() : first_time(true) {}
+	GInterpreter() {}
+	GInterpreter(Printhead& printhead);
 
 private:
+	Printhead& printhead;
 	GCommand command;
 	Method method;
 

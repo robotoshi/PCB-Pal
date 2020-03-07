@@ -11,9 +11,8 @@
 
 // step_delay = 60L * 1000L * 1000L / number_of_steps / whatSpeed;
 
-Stepper::Stepper( int steps, int pin1, int pin2, int pin3, int pin4 )
-                : total_steps(steps), pin1(pin1), pin2(pin2), pin3(pin3), pin4(pin4), 
-                  steps_to_go(0), current_position(0), step_delay(0), last_step_time(0) {
+Stepper::Stepper( int steps, int pin1, int pin2, int pin3, int pin4 ) :
+                  total_steps(steps), pin1(pin1), pin2(pin2), pin3(pin3), pin4(pin4) {
 
 	// setup the pins on the microcontroller:
 	pinMode(pin1, OUTPUT);

@@ -1,7 +1,11 @@
 #include "Arduino.h"
 #include "ginterpreter.h"
 #include "gcommand.h"
-// #include "printhead.h"
+#include "printhead.h"
+
+GInterpreter::GInterpreter(Printhead& head) : printhead(head) {
+
+}
 
 /**
 	Choose which method to run later
@@ -38,7 +42,7 @@ Method GInterpreter::get_method() {
 			case 94: return &G94;
 			case 27: return &G27;
 			case 28: return &G28;
-			default: return NULL;
+			default: return nullptr;
 		}
 	} else if (first_letter == 'M') {
 		switch (command.get_code()) {
@@ -56,9 +60,9 @@ Method GInterpreter::get_method() {
 			case 2:   return &M2;
 			case 108: return &M108;
 			case 400: return &M400;
-			default:  return NULL;
+			default:  return nullptr;
 		}
-	} else return NULL;
+	} else return nullptr;
 }
 
 /**

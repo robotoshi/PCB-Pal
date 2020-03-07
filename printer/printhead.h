@@ -18,13 +18,13 @@ private:
 	Stepper xStepper;
 	Stepper yStepper;
 
-	int step_x;
-	int step_y;
-	double phys_x;
-	double phys_y;
+	int step_x = 0;
+	int step_y = 0;
+	double phys_x = 0.0;
+	double phys_y = 0.0;
 
-	bool engaged;	// whether the pen is down or up
-	Unit unit;
+	bool engaged = false;	// whether the pen is down or up
+	Unit unit = MM;
 
 	const double steps_per_in = 100;	// TODO: calculate
 	const double steps_per_mm = 500;	// TODO: calculate
@@ -32,8 +32,7 @@ private:
 	void zero_here();
 
 public:
-	Printhead( int xsteps, int xpin1, int xpin2, int xpin3, int xpin4, 
-	           int ysteps, int ypin1, int ypin2, int ypin3, int ypin4 );
+	Printhead(const Stepper& xStepper, const Stepper& yStepper);
 
 	void engage();
 	void disengage();
