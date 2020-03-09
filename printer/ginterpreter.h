@@ -30,6 +30,8 @@ private:
 	bool test();
 	bool echo();
 
+	void set_move_xy(double speed);
+
 	// Actual codes lie below...
 	// See the file that outlines functionality in more detail
 

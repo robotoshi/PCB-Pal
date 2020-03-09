@@ -103,7 +103,7 @@ int Stepper::tick() {
 		if (now >= last_step_time + step_delay) {
 			last_step_time = now;
 			advance();
-			Serial.println(now - last_step_time);
+			// Serial.println(now - last_step_time);
 		}
 	}
 	return steps_to_go;

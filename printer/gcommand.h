@@ -24,7 +24,7 @@ struct GCode {
 
 class GCommand {
 private:
-	GCode* codes[5];
+	GCode* codes[5];	// shallow copied over nicely by default
 	int codes_len;
 
 	GCode* parse_gcode(char* str);		// split a gcode line into a GCommand object
@@ -33,10 +33,12 @@ public:
 	GCommand(char* line);
 	GCommand() {}
 
-	char get_letter() { return codes[0]->letter; }
-	int get_code() { return codes[0]->number.code; }
+	char get_first_letter() { return codes[0]->letter; }
+	int get_first_code() { return codes[0]->number.code; }
 	void dump();
 	void dumpln();
+	const GCode *const *const get_codes() { return codes; }
+	int get_len() { return codes_len; }
 };
 
 #endif

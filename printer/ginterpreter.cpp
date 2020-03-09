@@ -23,13 +23,21 @@ bool GInterpreter::interpret(char* line) {
 	return true;
 }
 
+/**
+	Execute the current command by delegating to a member function
+*/
+bool GInterpreter::execute() {
+	if ( !(this->*method)() ) return done();
+	else return true;
+}
+
 /** 
 	Pick a method
 */
 Method GInterpreter::get_method() {
-	char first_letter = command.get_letter();
+	char first_letter = command.get_first_letter();
 	if (first_letter == 'G') {
-		switch (command.get_code()) {
+		switch (command.get_first_code()) {
 			case 0:  return &G0;
 			case 1:  return &G1;
 			case 90: return &G90;
@@ -45,7 +53,7 @@ Method GInterpreter::get_method() {
 			default: return nullptr;
 		}
 	} else if (first_letter == 'M') {
-		switch (command.get_code()) {
+		switch (command.get_first_code()) {
 			case 73:  return &M73;
 			case 115: return &M115;
 			case 83:  return &M83;
@@ -65,67 +73,19 @@ Method GInterpreter::get_method() {
 	} else return nullptr;
 }
 
-/**
-	Execute the current command by delegating to a member function
-*/
-bool GInterpreter::execute() {
-	if ( !(this->*method)() ) return done();
-	else return true;
+//////////////////////////////////////////////////////////////////////
+// 	G-Code Functions
+//////////////////////////////////////////////////////////////////////
+
+bool GInterpreter::G0() {
+	set_move_xy(20.0);
+	return printhead.tick();
 }
-
-/**
-	Wrap up the gcode when it's finished and send info
-*/
-bool GInterpreter::done() {
-	Serial.println("\nDONE");
-	first_time = true;
-	return false;
-}
-
-bool GInterpreter::test() {
-	static int count = 10;
-	if (first_time) {
-		count = 10;
-		first_time = false;
-	}
-
-	Serial.print(count);
-	Serial.println("----");
-	delay(400);
-	if (count-- <= 0) {
-		count = 10;
-		return false;
-	}
-	return true;
-}
-
-
-bool GInterpreter::echo() {
-	Serial.println("------");
-	command.dumpln();
-	Serial.println("------");
-	return false;
-}
-
-//////////////////////////////////////////////////////////////
-
-bool GInterpreter::G0() { return test(); }
 
 bool GInterpreter::G1() {
-
-	// static Stepper s(200, 1, 11, 12, 13);
-	
-	// if (first_time) {
-	// 	s.set_move(-20, 0);
-	// 	first_time = false;
-	// }
-
-	// if (s.tick() == 0) {
-	// 	s.disable();
-	// 	return false;
-	// } else return true;
-	
-	return false;
+	printhead.engage();
+	set_move_xy(10.0);
+	return printhead.tick();
 }
 
 bool GInterpreter::M73() { return echo(); }
@@ -168,3 +128,65 @@ bool GInterpreter::M108() { return echo(); }
 
 bool GInterpreter::M400() { return echo(); }
 
+
+//////////////////////////////////////////////////////////////////////
+// 	Private Helper Functions
+//////////////////////////////////////////////////////////////////////
+
+/**
+	Wrap up the gcode when it's finished and send info
+*/
+bool GInterpreter::done() {
+	Serial.println("\nDONE");
+	first_time = true;
+	return false;
+}
+
+void GInterpreter::set_move_xy(double speed) {
+	if (first_time) {
+		if (command.get_len() < 3) {
+			Serial.println("Bad Code: Too few params");
+			return false;
+		}
+
+		const GCode& xcode = *command.get_codes()[1];
+		const GCode& ycode = *command.get_codes()[2];
+
+		if (xcode.letter != 'X' || ycode.letter != 'Y') {
+			Serial.println("Bad Code: Wrong params");
+			return false;
+		}
+
+		printhead.set_move(xcode.number.value, ycode.number.value, speed);
+		first_time = false;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+// 	Test Functions
+//////////////////////////////////////////////////////////////////////
+
+bool GInterpreter::test() {
+	static int count = 10;
+	if (first_time) {
+		count = 10;
+		first_time = false;
+	}
+
+	Serial.print(count);
+	Serial.println("----");
+	delay(400);
+	if (count-- <= 0) {
+		count = 10;
+		return false;
+	}
+	return true;
+}
+
+
+bool GInterpreter::echo() {
+	Serial.println("------");
+	command.dumpln();
+	Serial.println("------");
+	return false;
+}

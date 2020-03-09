@@ -26,8 +26,9 @@ private:
 	bool engaged = false;	// whether the pen is down or up
 	Unit unit = MM;
 
-	const double steps_per_in = 100;	// TODO: calculate
-	const double steps_per_mm = 500;	// TODO: calculate
+	const double steps_per_in = 1000;	// TODO: calculate
+	const double steps_per_mm = 300;	// TODO: calculate
+	double steps_per_unit = steps_per_mm;
 
 	void zero_here();
 
@@ -37,7 +38,7 @@ public:
 	void engage();
 	void disengage();
 
-	void set_dest(double xdest, double ydest, double speed);
+	void set_move(double xdest, double ydest, double speed);
 	bool tick();
 	void disable();
 	void enable();
@@ -46,6 +47,7 @@ public:
 
 	Unit get_unit() { return unit; }
 	void set_unit(Unit u) { unit = u; }
+	bool is_engaged() { return engaged; }
 };
 
 #endif
