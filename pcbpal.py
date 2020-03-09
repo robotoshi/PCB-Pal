@@ -4,16 +4,27 @@
 from typing import List, Dict
 
 
-
 class Tag:
     """ A simple class that just has a name, a dict of all its attributes, and a list of all its children tags.
         All docs that use the word "Tag" with a capital T to refer to this class
     """
 
     def __init__(self, name: str, attr: Dict[str, str] = None, children: List = None):
-        self.name: str = name # eg. "plain"
-        self.attr: Dict[str, str] = attr  # eg. "wire", "x1="0" y1="0" x2="66.548" y2="0" width="0" layer="20""
-        self.children: List[Tag] = children
+        self.name: str = name
+        self.attr: Dict[str, str] = attr or {}
+        self.children: List[Tag] = children or []
+
+    def display(self):
+        print("Name: ", self.name)
+        if self.attr:
+            print("Attributes: ", self.attr)
+        else:
+            print("No attributes")
+        if self.children:
+            for t in self.children:
+                t.display()
+        else:
+            print("No children")
 
 
 class Board:

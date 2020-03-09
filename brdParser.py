@@ -2,11 +2,13 @@
 # Patrick Robert Willmann - Group 13
 
 from pcbpal import *
+import xml.etree.ElementTree as ET
 
-class fileManager:
 
-    def __init__(self, fileName):
-        self.fileName = fileName
+class FileManager:
+
+    def __init__(self, filename):
+        self.fileName = filename
 
     def loadFile(self):
         self.fileObject = open(self.fileName, "r")
@@ -16,52 +18,65 @@ class fileManager:
         self.fileObject.close()
 
 
-class brdParser:
+class BrdParser:
+
+    """ .somethingTop nomenclature refers to the xml.etree element dictionary
+        .somethingTag refers to the output dictionary which will be passed to the final Board object
+    """
 
     def __init__(self, inputstring):
         self.inputString = inputstring
-        import xml.etree.ElementTree as ET
         self.root = ET.fromstring(self.inputString)
-        self.findtops()
-        self.placegrid()
-        self.placeplain()
-
-    def findtops(self):
-        print("Top Level Tag is: " + self.root.tag, self.root.attrib)
-        # Use this technique to find various individual Element objects. This will return the first Element found!
-        self.plainTop = self.root.find('.//plain')
-        print(self.plainTop)
+        print("\nTop Level Tag is: " + self.root.tag, self.root.attrib)
         self.gridTop = self.root.find('.//grid')
         print(self.gridTop)
+        self.plainTop = self.root.find('.//plain')
+        print(self.plainTop)
         self.designRulesTop = self.root.find('.//designrules')
         print(self.designRulesTop)
         self.signalsTop = self.root.find('.//signals')
         print(self.signalsTop)
-        # This is a LIST of elements - can iterate through list and still treat each item as an Element object
-        self.libraryTop = self.root.findall('.//library')
-        print(self.libraryTop)
+        self.elementsTop = self.root.find('.//elements')
+        print(self.elementsTop)
+        self.librariesTop = self.root.find('.//libraries')
+        print(self.librariesTop)
 
-    def placegrid(self):
         self.gridTag = Tag("grid")
-        print("Placing... " + self.gridTag.name)
-        self.gridTag.attr = self.gridTop.attrib
-        print(self.gridTag.attr)
-        print("... successfully placed")
-
-    def placeplain(self):
         self.plainTag = Tag("plain")
-        print("Placing... " + self.plainTag.name)
-        for child in self.plainTop:
-            print(child.tag, child.attrib)
-            self.plainTag.children = Tag(child.tag, child.attrib)
+        self.designRulesTag = Tag("designrules")
+        self.signalsTag = Tag("signals")
+        self.elementsTag = Tag("elements")
+        self.librariesTag = Tag("libraries")
+
+        self.place(self.gridTop, self.gridTag)
+        self.place(self.plainTop, self.plainTag)
+        self.place(self.designRulesTop, self.designRulesTag)
+        self.place(self.signalsTop, self.signalsTag)
+        self.place(self.elementsTop, self.elementsTag)
+        self.place(self.librariesTop, self.librariesTag)
+
+    def place(self, elementIn: ET.Element, tag: Tag):
+        print("Placing... ", elementIn.tag)
+        tag.attr = elementIn.attrib
+        if tag.attr:
+            print(tag.attr)
+        else:
+            print("No Attributes")
+        for child in elementIn:
+            tag.children.append(Tag(child.tag, child.attrib))
+            print(tag.children[-1].name, tag.children[-1].attr)
+            if len(list(child)):
+                self.place(child, tag.children[-1])
+        print("Successfully placed: ", tag.name)
 
 
-path = "sample.brd"
-# path = input("Enter the file path:\n")
-fileIn = fileManager(path)
+
+# path = "sample.brd"
+path = input("Enter the file path:\n")
+fileIn = FileManager(path)
 fileIn.loadFile()
-parser = brdParser(fileIn.tempStorage)
+parser = BrdParser(fileIn.tempStorage)
 fileIn.closeFile()
-# board = Board(things go here yes)
+board = Board(parser.gridTag, parser.plainTag, parser.librariesTag, parser.designRulesTag, parser.elementsTag, parser.signalsTag)
 
 
