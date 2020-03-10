@@ -12,17 +12,16 @@ class GInterpreter {
 public:
 	bool interpret(char* line);
 	bool execute();
-	GInterpreter() {}
 	GInterpreter(Printhead& printhead);
 
 private:
 	Printhead& printhead;
-	GCommand command;
+	GCommand* command = nullptr;
 	Method method;
 
 	// because the gcode functions are stateful in general, they need to know when to reset their state, 
 	// namely if they're been interrupted by an urgent command
-	bool first_time;
+	bool first_time = true;
 
 	Method get_method();	// pick the member method based on a GCommand
 	bool done();	// called when a gcode is finished

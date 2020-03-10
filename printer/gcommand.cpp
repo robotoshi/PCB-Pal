@@ -10,6 +10,10 @@ GCommand::GCommand(char* line) : codes_len(0) {
 	}
 }
 
+GCommand::~GCommand() {
+	for (int i=0; i<codes_len; ++i)	delete codes[i];
+}
+
 GCode* GCommand::parse_gcode(char* str) {
 	GCode* gc = new GCode;
 	char letter = str[0];

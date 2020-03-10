@@ -11,13 +11,13 @@ GInterpreter::GInterpreter(Printhead& head) : printhead(head) {
 	Choose which method to run later
 */
 bool GInterpreter::interpret(char* line) {
-	command = GCommand(line);
+	if (command) delete command;
+	command = new GCommand(line);
 	first_time = true;
 	Serial.println("Interpreting...\n");
-
 	if ( !(method = get_method()) ) {
-		Serial.println("Unknown Code: \t");
-		command.dump();
+		Serial.print("Unknown Code: \t");
+		command->dump();
 		return done();
 	}
 	return true;
@@ -27,17 +27,22 @@ bool GInterpreter::interpret(char* line) {
 	Execute the current command by delegating to a member function
 */
 bool GInterpreter::execute() {
-	if ( !(this->*method)() ) return done();
-	else return true;
+	if (!method) {
+		Serial.println("__Null Pointer Error__");
+		Serial.flush();
+		return false;
+	}
+	if ( (this->*method)() ) return true;
+	else return done();
 }
 
 /** 
 	Pick a method
 */
 Method GInterpreter::get_method() {
-	char first_letter = command.get_first_letter();
+	char first_letter = command->get_first_letter();
 	if (first_letter == 'G') {
-		switch (command.get_first_code()) {
+		switch (command->get_first_code()) {
 			case 0:  return &G0;
 			case 1:  return &G1;
 			case 90: return &G90;
@@ -53,7 +58,7 @@ Method GInterpreter::get_method() {
 			default: return nullptr;
 		}
 	} else if (first_letter == 'M') {
-		switch (command.get_first_code()) {
+		switch (command->get_first_code()) {
 			case 73:  return &M73;
 			case 115: return &M115;
 			case 83:  return &M83;
@@ -78,13 +83,13 @@ Method GInterpreter::get_method() {
 //////////////////////////////////////////////////////////////////////
 
 bool GInterpreter::G0() {
-	set_move_xy(20.0);
+	set_move_xy(10.0);
 	return printhead.tick();
 }
 
 bool GInterpreter::G1() {
 	printhead.engage();
-	set_move_xy(10.0);
+	set_move_xy(20.0);
 	return printhead.tick();
 }
 
@@ -144,13 +149,13 @@ bool GInterpreter::done() {
 
 void GInterpreter::set_move_xy(double speed) {
 	if (first_time) {
-		if (command.get_len() < 3) {
+		if (command->get_len() < 3) {
 			Serial.println("Bad Code: Too few params");
 			return false;
 		}
 
-		const GCode& xcode = *command.get_codes()[1];
-		const GCode& ycode = *command.get_codes()[2];
+		const GCode& xcode = *command->get_codes()[1];
+		const GCode& ycode = *command->get_codes()[2];
 
 		if (xcode.letter != 'X' || ycode.letter != 'Y') {
 			Serial.println("Bad Code: Wrong params");
@@ -186,7 +191,7 @@ bool GInterpreter::test() {
 
 bool GInterpreter::echo() {
 	Serial.println("------");
-	command.dumpln();
+	command->dumpln();
 	Serial.println("------");
 	return false;
 }

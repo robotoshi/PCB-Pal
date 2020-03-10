@@ -24,14 +24,15 @@ struct GCode {
 
 class GCommand {
 private:
-	GCode* codes[5];	// shallow copied over nicely by default
+	static constexpr int max_codes = 6;
+	GCode* codes[max_codes];	// shallow copied over nicely by default
 	int codes_len;
 
 	GCode* parse_gcode(char* str);		// split a gcode line into a GCommand object
 
 public:
 	GCommand(char* line);
-	GCommand() {}
+	~GCommand();
 
 	char get_first_letter() { return codes[0]->letter; }
 	int get_first_code() { return codes[0]->number.code; }
