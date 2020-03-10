@@ -3,9 +3,10 @@
 #include "ginterpreter.h"
 #include "printhead.h"
 
-#define BAUD_RATE	9600
+#define BAUD_RATE	250000
 #define RX_TIMEOUT	3000
 #define URGENT_INTERVAL 500
+#define HANDSHAKE_DELAY 1500
 
 #define CMD_WID		50
 #define QUEUE_LEN	5
@@ -36,7 +37,7 @@ Printhead* head;
 void setup() {
 	Serial.begin(BAUD_RATE);
 	while (!Serial) ; 		// wait for serial to be ready
-	task = request_gcode;
+	task = handshake;
 	head = new Printhead( Stepper(STEPS_PER_REV, XPIN1, XPIN2, XPIN3, XPIN4),
 	                      Stepper(STEPS_PER_REV, YPIN1, YPIN2, YPIN3, YPIN4) );
 	interpreter = new GInterpreter(*head);
@@ -60,6 +61,26 @@ void loop() {
 
 	task = task();
 	// if (task == nullptr) task = (urgent) ? urgent_process : receive;		// escapse task
+}
+
+Procedure handshake() {
+	static long last_tx_time = 0;
+
+	if (Serial.available() > 0 ) {
+		char c = Serial.read();
+		if (c == '\n') {
+			if (index <= 0) return handshake;
+			inbuf[index++] = '\0';
+			index = 0;
+			if (strcmp(inbuf, "HELLO") == 0) return request_gcode;
+		} else {
+			inbuf[index++] = c;
+		}
+	} else if (millis() > last_tx_time + HANDSHAKE_DELAY) {
+		Serial.println("HELLO");
+		last_tx_time = millis();
+	}
+	return handshake;
 }
 
 Procedure run_gcode() {
@@ -89,7 +110,7 @@ Procedure request_gcode() {
 	triggered with '<' and escaped with '>'
 */
 Procedure urgent_process() {
-	char c;
+		char c;
 	if (Serial.available() > 0 ) {
 		if (Serial.peek() == '>') {
 			if (index == 0) {
@@ -160,14 +181,16 @@ Procedure receive() {
 		index = 0;
 		return request_gcode;
 	}
-
+	
 	if (Serial.available() > 0 ) {
 		prev_rx_time = millis();
 		char c = Serial.read();
 
 		if (check_urgent(c)) return urgent_process;
-		
-		if (c == '\n' || c == ';') {		// End of command. Start grabbing it
+
+		if (c == '|') {
+			return finished;
+		} else if (c == '\n' || c == ';') {		// End of command. Start grabbing it
 			if (index <= 0) return receive;
 			inbuf[index++] = '\0';
 			Serial.println();
@@ -211,10 +234,18 @@ Procedure load_gcode() {
 		Serial.print(" EXEC: ");
 		char* line = queue.pop_front();
 		Serial.println(line);
-
-		interpreter->interpret(line);
-		return run_gcode;
+		
+		if (interpreter->interpret(line)) return run_gcode;
+		else return request_gcode;
 	}
+}
+
+Procedure finished() {
+	Serial.println("FINISHED");
+	delay(1000);
+	Serial.end();
+	while(true);
+	return finished;
 }
 
 void queue_dump() {
