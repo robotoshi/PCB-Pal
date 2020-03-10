@@ -78,5 +78,3 @@ fileIn.loadFile()
 parser = BrdParser(fileIn.tempStorage)
 fileIn.closeFile()
 board = Board(parser.gridTag, parser.plainTag, parser.librariesTag, parser.designRulesTag, parser.elementsTag, parser.signalsTag)
-
-

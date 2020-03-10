@@ -14,17 +14,17 @@ class Tag:
         self.attr: Dict[str, str] = attr or {}
         self.children: List[Tag] = children or []
 
-    def display(self):
-        print("Name: ", self.name)
+    def __str__(self):
+        output = "<" + self.name + ">\t"
         if self.attr:
-            print("Attributes: ", self.attr)
+            output += "Attributes: " + str(self.attr) + "\n"
         else:
-            print("No attributes")
+            output += "No attributes\n"
+
         if self.children:
-            for t in self.children:
-                t.display()
-        else:
-            print("No children")
+            for child in self.children:
+                output += str(child).replace("<", "\t<")
+        return output
 
 
 class Board:
@@ -60,4 +60,12 @@ class Board:
 
         # layer 20 wires inside <plain> gives board dimensions
 
+    def __str__(self):
+        return "length: " + str(self.length) + "\n" + \
+               "width: " + str(self.width) + "\n" + \
+               "traces:\n" + str(self.traces) + "\n" + \
+               "ends: \n" + str(self.ends) + "\n"
 
+    def __repr__(self):
+        return self.__str__() + "\n" + str(self.grid) + str(self.plain) + str(self.libraries) + \
+               str(self.designrules) + str(self.elements) + str(self.signals)
