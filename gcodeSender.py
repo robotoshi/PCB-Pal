@@ -3,46 +3,34 @@ import os
 import sys
 import serial
 import time
-import signal
-import getopt
-import fileinput
+from pcbpal import *
+# import getopt
 
 try:
     import _winreg
-except:
+except ModuleNotFoundError:
     pass
 
 
-def signal_handler(sig, frame):
-    """Handle a keyboard interrupt signal (SIGINT or Ctrl-C) and suppress the stacktrace."""
-    print('\n\nReceived Ctrl-C.  Exiting...')
-    sys.exit(0)
-
-
-def eprint(*args, **kwargs):
-    """Print to stderr"""
-    print(*args, file=sys.stderr, **kwargs)
-
-
-def serialList():
+def serialList() -> List[str]:
     """Return a list of valid serial ports.  Should work on Windows too?"""
     baselist = []
     if os.name == "nt":
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM")
             i = 0
-            while (1):
+            while 1:
                 baselist += [_winreg.EnumValue(key, i)[1]]
                 i += 1
-        except:
+        except NameError:
             pass
     baselist = baselist \
-               + glob.glob("/dev/ttyUSB*") \
-               + glob.glob("/dev/ttyACM*") \
-               + glob.glob("/dev/tty.usb*") \
-               + glob.glob("/dev/cu.*") \
-               + glob.glob("/dev/cuaU*") \
-               + glob.glob("/dev/rfcomm*")
+        + glob.glob("/dev/ttyUSB*") \
+        + glob.glob("/dev/ttyACM*") \
+        + glob.glob("/dev/tty.usb*") \
+        + glob.glob("/dev/cu.*") \
+        + glob.glob("/dev/cuaU*") \
+        + glob.glob("/dev/rfcomm*")
 
     # prev = settings().get(["serial", "port"])
     # if prev in baselist:
@@ -53,7 +41,7 @@ def serialList():
     return baselist
 
 
-def connect(portlist):
+def connect(portlist: List[str]):
     """Given a list of potential serial ports, attempt to connect and then
     handshake with each of them, and return the first that was successful. Exit on failure."""
     for port in portlist:
@@ -77,24 +65,13 @@ def connect(portlist):
     exit(2)
 
 
-def openfile(name):
-    """Open a file with the given name and return the handle. Exit on failure."""
-    try:
-        return open(name)
-    except OSError as ex:
-        eprint("No such file.  Exiting...")
-        exit(2)
-
-
 if __name__ == '__main__':
-    signal.signal(signal.SIGINT, signal_handler)
-
     if len(sys.argv) != 2:
         eprint("Usage: python3", __file__, "<filename>")
         exit(1)
 
-    printer = connect(serialList())
     file = openfile(sys.argv[1])
+    printer = connect(serialList())
     print("Sending gcode file:", file.name, "\n\n")
 
     printing = True     # keeps the IDE from complaining

@@ -70,11 +70,17 @@ class BrdParser:
         print("Successfully placed: ", tag.name)
 
 
+def createBoard(path) -> Board:
+    fileIn = FileManager(path)
+    fileIn.loadFile()
+    parser = BrdParser(fileIn.tempStorage)
+    fileIn.closeFile()
+    board = Board(parser.gridTag, parser.plainTag, parser.librariesTag, parser.designRulesTag, parser.elementsTag, parser.signalsTag)
+    return board
 
-# path = "sample.brd"
-path = input("Enter the file path:\n")
-fileIn = FileManager(path)
-fileIn.loadFile()
-parser = BrdParser(fileIn.tempStorage)
-fileIn.closeFile()
-board = Board(parser.gridTag, parser.plainTag, parser.librariesTag, parser.designRulesTag, parser.elementsTag, parser.signalsTag)
+
+if __name__== "__main__":
+    filepath = input("Enter the file path:\n")
+    # path = "sample.brd"
+    board = createBoard(filepath)
+    print(board)
